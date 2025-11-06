@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { supabase } from '@/lib/supabase';
 import {
   Table,
   TableBody,
@@ -25,7 +25,6 @@ interface InstructorProfile {
 }
 
 export default function InstructorApprovalsPage() {
-  const supabase = createClientComponentClient();
   const [pendingInstructors, setPendingInstructors] = useState<InstructorProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

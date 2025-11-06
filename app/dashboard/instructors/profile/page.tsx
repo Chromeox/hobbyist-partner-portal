@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 import {
   User,
@@ -43,7 +43,6 @@ interface InstructorProfileData {
 
 export default function InstructorProfileManagementPage() {
   const { user } = useAuthContext();
-  const supabase = createClientComponentClient();
   const router = useRouter();
 
   const [profile, setProfile] = useState<InstructorProfileData | null>(null);
