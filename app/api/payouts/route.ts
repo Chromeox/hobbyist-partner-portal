@@ -11,7 +11,7 @@ const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
 // Initialize Stripe client with secret key for secure API calls
-const STRIPE_API_VERSION: Stripe.LatestApiVersion = '2024-06-20';
+const STRIPE_API_VERSION = '2024-06-20' as Stripe.LatestApiVersion;
 const stripe = process.env.STRIPE_SECRET_KEY 
   ? new Stripe(process.env.STRIPE_SECRET_KEY, {
       apiVersion: STRIPE_API_VERSION,
