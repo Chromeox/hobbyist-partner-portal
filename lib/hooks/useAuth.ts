@@ -61,6 +61,35 @@ export function useAuth() {
 
     const initializeAuth = async () => {
       try {
+        // Check for demo session first
+        if (typeof window !== 'undefined') {
+          const demoSession = localStorage.getItem('demo_session')
+          const demoUser = localStorage.getItem('demo_user')
+          
+          if (demoSession && demoUser) {
+            const session = JSON.parse(demoSession)
+            const user = JSON.parse(demoUser)
+            
+            // Check if demo session is still valid
+            if (session.expires_at && session.expires_at > Math.floor(Date.now() / 1000)) {
+              if (mountedRef.current) {
+                setState({
+                  user,
+                  session,
+                  isLoading: false,
+                  isAuthenticated: true,
+                  error: null
+                })
+              }
+              return
+            } else {
+              // Clear expired demo session
+              localStorage.removeItem('demo_session')
+              localStorage.removeItem('demo_user')
+            }
+          }
+        }
+        
         const { data, error } = await authService.getSession()
         
         if (!mountedRef.current) return
@@ -126,6 +155,58 @@ export function useAuth() {
   const signIn = useCallback(async (email: string, password: string) => {
     setState(prev => ({ ...prev, isLoading: true, error: null }))
     
+    // Demo credentials check
+    if (email === 'demo@hobbyist.com' && password === 'demo123456') {
+      // Create mock user and session for demo
+      const mockUser = {
+        id: 'demo-user-id',
+        email: 'demo@hobbyist.com',
+        aud: 'authenticated',
+        role: 'authenticated',
+        email_confirmed_at: new Date().toISOString(),
+        phone: '',
+        confirmed_at: new Date().toISOString(),
+        last_sign_in_at: new Date().toISOString(),
+        app_metadata: { provider: 'demo' },
+        user_metadata: {
+          first_name: 'Demo',
+          last_name: 'Studio',
+          role: 'instructor',
+          business_name: 'Zenith Wellness Studio'
+        },
+        identities: [],
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      } as any
+      
+      const mockSession = {
+        user: mockUser,
+        access_token: 'demo-token',
+        refresh_token: 'demo-refresh',
+        expires_at: Math.floor(Date.now() / 1000) + 3600,
+        expires_in: 3600,
+        token_type: 'bearer'
+      } as any
+      
+      // Store demo session in localStorage for persistence
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('demo_session', JSON.stringify(mockSession))
+        localStorage.setItem('demo_user', JSON.stringify(mockUser))
+      }
+      
+      if (mountedRef.current) {
+        setState({
+          user: mockUser,
+          session: mockSession,
+          isLoading: false,
+          isAuthenticated: true,
+          error: null
+        })
+      }
+      
+      return { data: mockSession, error: null }
+    }
+    
     const { data, error } = await authService.signInWithEmail(email, password)
     
     if (!mountedRef.current) return { data, error }
@@ -185,6 +266,12 @@ export function useAuth() {
 
   const signOut = useCallback(async () => {
     setState(prev => ({ ...prev, isLoading: true, error: null }))
+    
+    // Clear demo session if it exists
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('demo_session')
+      localStorage.removeItem('demo_user')
+    }
     
     const { error } = await authService.signOut()
     
