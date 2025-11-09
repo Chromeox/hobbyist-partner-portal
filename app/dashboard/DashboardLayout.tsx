@@ -38,6 +38,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuthContext } from '@/lib/context/AuthContext';
 import { isAdmin, isNavItemVisible } from '@/lib/utils/roleUtils';
+import DashboardErrorBoundary from '@/components/error/DashboardErrorBoundary';
 
 const navigationSections = [
   {
@@ -410,7 +411,9 @@ export default function DashboardLayout({ children, studioName = 'Your Studio', 
 
         {/* Page Content */}
         <main className="p-4 sm:p-6 lg:p-8">
-          {children}
+          <DashboardErrorBoundary page="dashboard content">
+            {children}
+          </DashboardErrorBoundary>
         </main>
       </div>
     </div>

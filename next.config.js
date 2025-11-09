@@ -1,5 +1,9 @@
 /** @type {import('next').NextConfig} */
 
+const withBundleAnalyzer = require('@next/bundle-analyzer')({
+  enabled: process.env.ANALYZE === 'true',
+});
+
 // HTTP/2 Server Push and Performance Configuration
 const nextConfig = {
   reactStrictMode: true,
@@ -7,7 +11,18 @@ const nextConfig = {
   // Enable experimental features for performance
   experimental: {
     optimizeCss: true, // CSS optimization
-    optimizePackageImports: ['@supabase/supabase-js', 'react-icons'],
+    optimizePackageImports: [
+      '@supabase/supabase-js', 
+      '@radix-ui/react-dialog',
+      '@radix-ui/react-dropdown-menu',
+      '@radix-ui/react-select',
+      '@radix-ui/react-tabs',
+      '@radix-ui/react-toast',
+      'lucide-react',
+      'framer-motion',
+      'chart.js',
+      'recharts'
+    ],
     webVitalsAttribution: ['CLS', 'LCP', 'FCP', 'FID', 'TTFB'],
   },
   
@@ -264,4 +279,4 @@ const nextConfig = {
   productionBrowserSourceMaps: process.env.ENABLE_SOURCE_MAPS === 'true',
 }
 
-module.exports = nextConfig
+module.exports = withBundleAnalyzer(nextConfig)
