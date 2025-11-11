@@ -50,33 +50,47 @@ export async function GET(request: Request) {
 
   // Handle email magic link verification (token_hash flow)
   if (token_hash && type) {
-    console.log('Processing email magic link:', { type })
+    console.log('[Auth Callback] Processing password reset token_hash flow')
 
     try {
+      // For password reset, we need to use the recovery type
       const { data, error: verifyError } = await supabase.auth.verifyOtp({
         token_hash,
-        type: type as any
+        type: 'recovery'
       })
 
-      console.log('Email magic link verification result:', {
+      console.log('[Auth Callback] verifyOtp result:', {
         success: !verifyError,
         error: verifyError?.message,
-        hasSession: !!data.session
+        errorCode: verifyError?.code,
+        hasSession: !!data?.session,
+        hasUser: !!data?.user
       })
 
-      if (!verifyError && data.session) {
-        console.log('Email verification successful, redirecting to:', next)
+      if (verifyError) {
+        console.error('[Auth Callback] Password reset verification failed:', {
+          message: verifyError.message,
+          code: verifyError.code,
+          status: verifyError.status
+        })
+        return NextResponse.redirect(
+          new URL(`/auth/signin?error=verification_failed&message=${encodeURIComponent(verifyError.message || 'Password reset link is invalid or expired')}`, requestUrl.origin)
+        )
+      }
+
+      if (data.session) {
+        console.log('[Auth Callback] Password reset session established, redirecting to reset form')
         return NextResponse.redirect(new URL(next, requestUrl.origin))
       } else {
-        console.error('Email verification failed:', verifyError)
+        console.error('[Auth Callback] No session created after verifyOtp')
         return NextResponse.redirect(
-          new URL(`/auth/signin?error=verification_failed&message=${encodeURIComponent(verifyError?.message || 'Email verification failed')}`, requestUrl.origin)
+          new URL('/auth/signin?error=no_session&message=Unable to establish reset session', requestUrl.origin)
         )
       }
     } catch (err) {
-      console.error('Unexpected error during email verification:', err)
+      console.error('[Auth Callback] Unexpected error during password reset verification:', err)
       return NextResponse.redirect(
-        new URL('/auth/signin?error=verification_error&message=Unexpected error during verification', requestUrl.origin)
+        new URL('/auth/signin?error=verification_error&message=An unexpected error occurred', requestUrl.origin)
       )
     }
   }
