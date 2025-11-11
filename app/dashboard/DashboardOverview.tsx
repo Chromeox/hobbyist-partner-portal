@@ -18,8 +18,8 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import StudioIntelligenceSummary from '../../components/studio/StudioIntelligenceSummary';
-import SetupReminders from '../../components/dashboard/SetupReminders';
 import { motion } from 'framer-motion';
 import { dashboardService } from '@/lib/services/dashboard';
 import { formatCurrency } from '@/lib/utils';
@@ -123,6 +123,7 @@ const EmptyState = ({ title, message, actionText, onAction, icon: Icon = BookOpe
 );
 
 export default function DashboardOverview({ studioId }: DashboardOverviewProps) {
+  const router = useRouter();
   const effectiveStudioId = studioId || 'demo-studio-id';
   const [selectedPeriod, setSelectedPeriod] = useState<DashboardPeriod>('week');
   const [isLoading, setIsLoading] = useState(true);
@@ -545,9 +546,6 @@ export default function DashboardOverview({ studioId }: DashboardOverviewProps) 
         )}
       </div>
 
-      {/* Setup Reminders */}
-      <SetupReminders className="mb-6" />
-
       {/* Studio Intelligence Summary */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <StudioIntelligenceSummary
@@ -562,7 +560,7 @@ export default function DashboardOverview({ studioId }: DashboardOverviewProps) 
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
             className="bg-white shadow-lg border border-gray-200 rounded-xl p-4 hover:shadow-xl transition-all duration-300 group cursor-pointer"
-            onClick={() => window.location.href = '/dashboard/classes'}
+            onClick={() => router.push('/dashboard/classes')}
           >
             <div className="flex items-center gap-3">
               <div className="p-2 bg-blue-100 rounded-lg">
