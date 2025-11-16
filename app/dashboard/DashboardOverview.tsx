@@ -561,7 +561,7 @@ export default function DashboardOverview({ studioId }: DashboardOverviewProps) 
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
             className="bg-white shadow-lg border border-gray-200 rounded-xl p-4 hover:shadow-xl transition-all duration-300 group cursor-pointer"
-            onClick={() => window.location.href = '/dashboard/reservations'}
+            onClick={() => router.push('/dashboard/reservations')}
           >
             <div className="flex items-center gap-3">
               <div className="p-2 bg-green-100 rounded-lg">
@@ -580,7 +580,7 @@ export default function DashboardOverview({ studioId }: DashboardOverviewProps) 
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
             className="bg-white shadow-lg border border-gray-200 rounded-xl p-4 hover:shadow-xl transition-all duration-300 group cursor-pointer"
-            onClick={() => window.location.href = '/dashboard/students'}
+            onClick={() => router.push('/dashboard/students')}
           >
             <div className="flex items-center gap-3">
               <div className="p-2 bg-purple-100 rounded-lg">
@@ -599,7 +599,7 @@ export default function DashboardOverview({ studioId }: DashboardOverviewProps) 
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
             className="bg-white shadow-lg border border-gray-200 rounded-xl p-4 hover:shadow-xl transition-all duration-300 group cursor-pointer"
-            onClick={() => window.location.href = '/dashboard/revenue'}
+            onClick={() => router.push('/dashboard/revenue')}
           >
             <div className="flex items-center gap-3">
               <div className="p-2 bg-yellow-100 rounded-lg">
@@ -621,11 +621,11 @@ export default function DashboardOverview({ studioId }: DashboardOverviewProps) 
         <div className="lg:col-span-2 bg-white shadow-lg border border-gray-200 rounded-xl p-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-semibold text-gray-900">Revenue Overview</h2>
-            <button 
-              onClick={() => window.location.href = '/dashboard/revenue'}
+            <button
+              onClick={() => router.push('/dashboard/revenue')}
               className="text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors flex items-center gap-1 group"
             >
-              View Details 
+              View Details
               <ChevronRight className="inline h-4 w-4 transition-transform group-hover:translate-x-1" />
             </button>
           </div>
