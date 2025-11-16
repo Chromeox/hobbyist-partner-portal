@@ -542,11 +542,7 @@ export default function ClassManagement() {
           size="lg"
         />
       ) : (
-        <div
-          className={viewMode === 'grid'
-            ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'
-            : 'space-y-4'}
-        >
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredClasses.map((cls) => (
             <motion.div
               key={cls.id}
@@ -562,11 +558,9 @@ export default function ClassManagement() {
                 }
               }}
               onClick={() => handleEditClass(cls)}
-              className={`bg-white rounded-xl shadow-sm border hover:shadow-md transition-shadow overflow-hidden group cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-                viewMode === 'list' ? 'flex' : ''
-              }`}
+              className="bg-white rounded-xl shadow-sm border hover:shadow-md transition-shadow overflow-hidden group cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             >
-              <div className={viewMode === 'list' ? 'w-1/3 relative bg-gradient-to-br from-blue-500 to-purple-600' : 'relative h-48 bg-gradient-to-br from-blue-500 to-purple-600'}>
+              <div className="relative h-48 bg-gradient-to-br from-blue-500 to-purple-600">
                 <div className="absolute inset-0 flex items-center justify-center">
                   <ImageIcon className="h-12 w-12 text-white opacity-50" />
                 </div>
@@ -592,7 +586,7 @@ export default function ClassManagement() {
                 </div>
               </div>
 
-              <div className={viewMode === 'list' ? 'flex-1 p-4' : 'p-4'}>
+              <div className="p-4">
                 <div className="flex items-start justify-between mb-2">
                   <h3 className="font-semibold text-gray-900 text-lg">
                     {cls.name}
