@@ -28,6 +28,14 @@ import {
 } from 'lucide-react';
 import BackButton from '@/components/common/BackButton';
 
+interface PastClass {
+  id: string;
+  className: string;
+  date: string;
+  credits: number;
+  amount: number;
+}
+
 interface Student {
   id: string;
   firstName: string;
@@ -47,6 +55,7 @@ interface Student {
   emergencyContact?: string;
   notes?: string;
   profileImage?: string;
+  pastClasses?: PastClass[];
 }
 
 // Mock data with realistic student information
@@ -67,7 +76,14 @@ const mockStudents: Student[] = [
     averageRating: 4.9,
     tags: ['regular', 'yoga', 'pilates'],
     address: '123 Main St, Vancouver, BC',
-    profileImage: '/avatars/emma.jpg'
+    profileImage: '/avatars/emma.jpg',
+    pastClasses: [
+      { id: '1', className: 'Vinyasa Flow Yoga', date: '2025-08-28', credits: 1, amount: 25 },
+      { id: '2', className: 'Advanced Pilates', date: '2025-08-25', credits: 1, amount: 25 },
+      { id: '3', className: 'Beginner Yoga', date: '2025-08-22', credits: 1, amount: 25 },
+      { id: '4', className: 'Power Yoga', date: '2025-08-20', credits: 1, amount: 25 },
+      { id: '5', className: 'Yin Yoga', date: '2025-08-18', credits: 1, amount: 25 }
+    ]
   },
   {
     id: '2',
@@ -109,7 +125,11 @@ export default function StudentManagement() {
   const [students, setStudents] = useState<Student[]>(mockStudents);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [dateRange, setDateRange] = useState<'all' | '30' | '60' | '90'>('all');
+  const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
+  const [showCredits, setShowCredits] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+  const [showHistory, setShowHistory] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
 
@@ -122,17 +142,33 @@ export default function StudentManagement() {
     </div>
   );
 
-  // Filter students based on search and status
-  const filteredStudents = students.filter(student => {
-    const matchesSearch = 
-      student.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      student.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      student.email.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesFilter = filterStatus === 'all' || student.membershipStatus === filterStatus;
-    
-    return matchesSearch && matchesFilter;
-  });
+  // Filter students based on search, status, date range, and sort
+  const filteredStudents = students
+    .filter(student => {
+      const matchesSearch =
+        student.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        student.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        student.email.toLowerCase().includes(searchTerm.toLowerCase());
+
+      const matchesFilter = filterStatus === 'all' || student.membershipStatus === filterStatus;
+
+      // Date range filter
+      let matchesDateRange = true;
+      if (dateRange !== 'all') {
+        const daysAgo = parseInt(dateRange);
+        const cutoffDate = new Date();
+        cutoffDate.setDate(cutoffDate.getDate() - daysAgo);
+        const joinedDate = new Date(student.joinedDate);
+        matchesDateRange = joinedDate >= cutoffDate;
+      }
+
+      return matchesSearch && matchesFilter && matchesDateRange;
+    })
+    .sort((a, b) => {
+      const dateA = new Date(a.joinedDate).getTime();
+      const dateB = new Date(b.joinedDate).getTime();
+      return sortOrder === 'newest' ? dateB - dateA : dateA - dateB;
+    });
 
   // Simulate loading
   useEffect(() => {
@@ -239,31 +275,76 @@ export default function StudentManagement() {
 
       {/* Search and Filter Bar */}
       <div className="bg-white rounded-xl border p-4">
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search students by name or email..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-            />
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search students by name or email..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+              />
+            </div>
+            <div className="flex gap-2">
+              <select
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value)}
+                className="px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
+              >
+                <option value="all">All Status</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+                <option value="paused">Paused</option>
+              </select>
+              <select
+                value={dateRange}
+                onChange={(e) => setDateRange(e.target.value as 'all' | '30' | '60' | '90')}
+                className="px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
+              >
+                <option value="all">All Time</option>
+                <option value="30">Last 30 Days</option>
+                <option value="60">Last 60 Days</option>
+                <option value="90">Last 90 Days</option>
+              </select>
+              <select
+                value={sortOrder}
+                onChange={(e) => setSortOrder(e.target.value as 'newest' | 'oldest')}
+                className="px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
+              >
+                <option value="newest">Newest First</option>
+                <option value="oldest">Oldest First</option>
+              </select>
+            </div>
           </div>
-          <div className="flex gap-2">
-            <select
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-              className="px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
-            >
-              <option value="all">All Status</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-              <option value="paused">Paused</option>
-            </select>
-            <button className="px-4 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-              <Filter className="h-5 w-5 text-gray-600" />
-            </button>
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-gray-600">
+              Showing {filteredStudents.length} of {students.length} students
+            </p>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-600">Display:</span>
+              <button
+                onClick={() => setShowCredits(!showCredits)}
+                className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${
+                  !showCredits
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                Amount
+              </button>
+              <button
+                onClick={() => setShowCredits(!showCredits)}
+                className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${
+                  showCredits
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                Credits
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -344,7 +425,9 @@ export default function StudentManagement() {
                         {new Date(student.lastActive).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        ${student.totalSpent.toLocaleString()}
+                        {showCredits
+                          ? `${Math.round(student.totalSpent / 5)} credits`
+                          : `$${student.totalSpent.toLocaleString()}`}
                       </td>
                     </motion.tr>
                   ))}
@@ -363,7 +446,10 @@ export default function StudentManagement() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
-            onClick={() => setSelectedStudent(null)}
+            onClick={() => {
+              setSelectedStudent(null);
+              setShowHistory(false);
+            }}
           >
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
@@ -423,11 +509,60 @@ export default function StudentManagement() {
                   </div>
                 </div>
 
-                <div className="flex gap-3">
-                  <button className="w-full px-4 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium">
+                {!showHistory ? (
+                  <button
+                    onClick={() => setShowHistory(true)}
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
+                  >
                     View History
                   </button>
-                </div>
+                ) : (
+                  <>
+                    <div className="border-t pt-4">
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-lg font-semibold text-gray-900">Past Classes</h3>
+                        <button
+                          onClick={() => setShowHistory(false)}
+                          className="text-sm text-blue-600 hover:text-blue-700"
+                        >
+                          Back to Details
+                        </button>
+                      </div>
+                      <div className="space-y-3 max-h-64 overflow-y-auto">
+                        {selectedStudent.pastClasses && selectedStudent.pastClasses.length > 0 ? (
+                          selectedStudent.pastClasses.map((pastClass) => (
+                            <div
+                              key={pastClass.id}
+                              className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                            >
+                              <div className="flex-1">
+                                <h4 className="font-medium text-gray-900">{pastClass.className}</h4>
+                                <p className="text-sm text-gray-600">
+                                  {new Date(pastClass.date).toLocaleDateString('en-US', {
+                                    weekday: 'short',
+                                    year: 'numeric',
+                                    month: 'short',
+                                    day: 'numeric'
+                                  })}
+                                </p>
+                              </div>
+                              <div className="text-right">
+                                <p className="font-semibold text-gray-900">
+                                  {showCredits ? `${pastClass.credits} credits` : `$${pastClass.amount}`}
+                                </p>
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="text-center py-8 text-gray-500">
+                            <BookOpen className="h-12 w-12 mx-auto mb-2 text-gray-400" />
+                            <p>No past classes yet</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
             </motion.div>
           </motion.div>
