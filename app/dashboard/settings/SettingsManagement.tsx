@@ -34,6 +34,7 @@ import {
   ToggleRight,
   Upload
 } from 'lucide-react';
+import { SelectDropdown } from '@/components/common/SelectDropdown';
 
 interface StudioSettings {
   // Business Information
@@ -513,34 +514,36 @@ export default function SettingsManagement() {
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Timezone
                       </label>
-                      <select
+                      <SelectDropdown
                         value={settings.timezone}
                         onChange={(e) => setSettings(prev => ({ ...prev, timezone: e.target.value }))}
-                        className="w-full pl-3 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white appearance-none cursor-pointer"
-                        style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3E%3Cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M6 8l4 4 4-4\'/%3E%3C/svg%3E")', backgroundPosition: 'right 0.75rem center', backgroundRepeat: 'no-repeat', backgroundSize: '1.25em 1.25em' }}
-                      >
-                        <option value="America/Los_Angeles">Pacific Time</option>
-                        <option value="America/Denver">Mountain Time</option>
-                        <option value="America/Chicago">Central Time</option>
-                        <option value="America/New_York">Eastern Time</option>
-                      </select>
+                        options={[
+                          { value: 'America/Los_Angeles', label: 'Pacific Time' },
+                          { value: 'America/Denver', label: 'Mountain Time' },
+                          { value: 'America/Chicago', label: 'Central Time' },
+                          { value: 'America/New_York', label: 'Eastern Time' },
+                        ]}
+                        className="w-full"
+                        size="sm"
+                      />
                     </div>
                     
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Currency
                       </label>
-                      <select
+                      <SelectDropdown
                         value={settings.currency}
                         onChange={(e) => setSettings(prev => ({ ...prev, currency: e.target.value }))}
-                        className="w-full pl-3 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white appearance-none cursor-pointer"
-                        style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3E%3Cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M6 8l4 4 4-4\'/%3E%3C/svg%3E")', backgroundPosition: 'right 0.75rem center', backgroundRepeat: 'no-repeat', backgroundSize: '1.25em 1.25em' }}
-                      >
-                        <option value="USD">USD ($)</option>
-                        <option value="CAD">CAD ($)</option>
-                        <option value="EUR">EUR (€)</option>
-                        <option value="GBP">GBP (£)</option>
-                      </select>
+                        options={[
+                          { value: 'USD', label: 'USD ($)' },
+                          { value: 'CAD', label: 'CAD ($)' },
+                          { value: 'EUR', label: 'EUR (€)' },
+                          { value: 'GBP', label: 'GBP (£)' },
+                        ]}
+                        className="w-full"
+                        size="sm"
+                      />
                     </div>
                   </div>
                 </div>
@@ -864,16 +867,17 @@ export default function SettingsManagement() {
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Refund Policy
                       </label>
-                      <select
+                      <SelectDropdown
                         value={settings.bookingPolicy.refundPolicy}
                         onChange={(e) => handleSettingsChange('bookingPolicy', 'refundPolicy', e.target.value)}
-                        className="w-full md:w-48 pl-3 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white appearance-none cursor-pointer"
-                        style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3E%3Cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M6 8l4 4 4-4\'/%3E%3C/svg%3E")', backgroundPosition: 'right 0.75rem center', backgroundRepeat: 'no-repeat', backgroundSize: '1.25em 1.25em' }}
-                      >
-                        <option value="full">Full Refund</option>
-                        <option value="partial">Partial Refund</option>
-                        <option value="none">No Refund</option>
-                      </select>
+                        options={[
+                          { value: 'full', label: 'Full Refund' },
+                          { value: 'partial', label: 'Partial Refund' },
+                          { value: 'none', label: 'No Refund' },
+                        ]}
+                        className="w-full md:w-48"
+                        size="sm"
+                      />
                     </div>
                     
                     <div className="space-y-4">

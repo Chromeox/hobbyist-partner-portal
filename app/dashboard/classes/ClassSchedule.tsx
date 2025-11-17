@@ -18,6 +18,7 @@ import {
   Settings,
   Download
 } from 'lucide-react';
+import { SelectDropdown } from '@/components/common/SelectDropdown';
 import SessionManagement from './SessionManagement';
 import type { Class, ClassSession, ClassScheduleProps } from '../../../types/class-management';
 import {
@@ -181,30 +182,30 @@ export default function ClassSchedule({ classes, onClose, onSave }: ClassSchedul
 
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2">
-                <select
+                <SelectDropdown
                   value={filterInstructor}
                   onChange={(e) => setFilterInstructor(e.target.value)}
-                  className="text-sm border border-gray-300 rounded-lg pl-3 pr-10 py-2 focus:ring-2 focus:ring-blue-500 bg-white appearance-none cursor-pointer"
-                  style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3E%3Cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M6 8l4 4 4-4\'/%3E%3C/svg%3E")', backgroundPosition: 'right 0.75rem center', backgroundRepeat: 'no-repeat', backgroundSize: '1.25em 1.25em' }}
-                >
-                  <option value="all">All Instructors</option>
-                  {instructors.map(instructor => (
-                    <option key={instructor} value={instructor}>{instructor}</option>
-                  ))}
-                </select>
+                  options={[
+                    { value: 'all', label: 'All Instructors' },
+                    ...instructors.map(instructor => ({ value: instructor, label: instructor }))
+                  ]}
+                  size="sm"
+                  ariaLabel="Filter by instructor"
+                />
 
-                <select
+                <SelectDropdown
                   value={filterStatus}
                   onChange={(e) => setFilterStatus(e.target.value)}
-                  className="text-sm border border-gray-300 rounded-lg pl-3 pr-10 py-2 focus:ring-2 focus:ring-blue-500 bg-white appearance-none cursor-pointer"
-                  style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3E%3Cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M6 8l4 4 4-4\'/%3E%3C/svg%3E")', backgroundPosition: 'right 0.75rem center', backgroundRepeat: 'no-repeat', backgroundSize: '1.25em 1.25em' }}
-                >
-                  <option value="all">All Status</option>
-                  <option value="scheduled">Scheduled</option>
-                  <option value="completed">Completed</option>
-                  <option value="cancelled">Cancelled</option>
-                  <option value="in-progress">In Progress</option>
-                </select>
+                  options={[
+                    { value: 'all', label: 'All Status' },
+                    { value: 'scheduled', label: 'Scheduled' },
+                    { value: 'completed', label: 'Completed' },
+                    { value: 'cancelled', label: 'Cancelled' },
+                    { value: 'in-progress', label: 'In Progress' },
+                  ]}
+                  size="sm"
+                  ariaLabel="Filter by status"
+                />
               </div>
 
               <button className="p-2 text-gray-500 hover:text-gray-700 rounded-lg hover:bg-gray-100">
