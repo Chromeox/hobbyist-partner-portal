@@ -1,14 +1,9 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { createServiceSupabase } from '@/lib/supabase';
 import { mapDbClassToUiClass, mapFormDataToUpsertPayload } from '@/lib/utils/class-mappers';
 import type { ClassFormData } from '@/types/class-management';
 
 export const dynamic = 'force-dynamic';
-
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
 const CLASS_SELECT = `
   *,
@@ -49,7 +44,7 @@ const validateFormData = (form: ClassFormData): string | null => {
   return null;
 };
 
-const resolveCategoryId = async (form: ClassFormData): Promise<string> => {
+const resolveCategoryId = async (form: ClassFormData, supabase: ReturnType<typeof createServiceSupabase>): Promise<string> => {
   if (form.categoryId && !form.categoryId.startsWith('fallback-')) {
     const { data, error } = await supabase
       .from('categories')
@@ -126,6 +121,7 @@ export async function PUT(
   }
 
   try {
+    const supabase = createServiceSupabase();
     const payload = await request.json();
     const form: ClassFormData | undefined = payload?.class;
     const studioId: string | null = payload?.studioId ?? null;
@@ -142,7 +138,7 @@ export async function PUT(
       return NextResponse.json({ error: validationError }, { status: 400 });
     }
 
-    const categoryId = await resolveCategoryId(form);
+    const categoryId = await resolveCategoryId(form, supabase);
     const upsertPayload = mapFormDataToUpsertPayload({ ...form, id }, categoryId);
     upsertPayload.updated_at = new Date().toISOString();
     delete upsertPayload.id;
@@ -184,6 +180,7 @@ export async function DELETE(
   }
 
   try {
+    const supabase = createServiceSupabase();
     const now = new Date().toISOString();
 
     const { data: futureSessions, error: scheduleError } = await supabase
