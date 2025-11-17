@@ -142,8 +142,8 @@ export const formatFrequency = (rule: RecurrenceRule) => {
 };
 
 // Calendar utilities
-export const getCalendarDays = (currentDate: Date) => {
-  const days = [];
+export const getCalendarDays = (currentDate: Date): Date[] => {
+  const days: Date[] = [];
   const startOfWeek = new Date(currentDate);
   startOfWeek.setDate(currentDate.getDate() - currentDate.getDay());
 
