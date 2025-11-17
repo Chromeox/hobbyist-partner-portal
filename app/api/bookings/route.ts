@@ -71,17 +71,17 @@ export async function GET(request: Request) {
     }
 
     // Also get booking stats for dashboard
-    const { data: stats } = await supabase
+    const { data: statusData } = await supabase
       .from('bookings')
-      .select('status')
-      .then(({ data }: { data: any }) => {
-        if (!data) return { data: {} };
-        const statusCounts = data.reduce((acc: any, booking: any) => {
-          acc[booking.status] = (acc[booking.status] || 0) + 1;
-          return acc;
-        }, {});
-        return { data: statusCounts };
-      });
+      .select('status');
+
+    let stats: Record<string, number> = {};
+    if (statusData) {
+      stats = statusData.reduce((acc: Record<string, number>, booking: { status: string }) => {
+        acc[booking.status] = (acc[booking.status] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+    }
 
     return NextResponse.json({
       bookings: bookings || [],
