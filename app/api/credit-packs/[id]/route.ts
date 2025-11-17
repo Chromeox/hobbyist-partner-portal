@@ -44,6 +44,7 @@ export async function PUT(
   request: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
+  const supabase = getSupabase();
   const { id } = await context.params;
 
   if (!id) {
@@ -156,6 +157,7 @@ export async function DELETE(
   _request: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
+  const supabase = getSupabase();
   const { id } = await context.params;
 
   if (!id) {
