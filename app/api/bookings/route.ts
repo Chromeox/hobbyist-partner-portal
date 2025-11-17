@@ -74,7 +74,7 @@ export async function GET(request: Request) {
     const { data: stats } = await supabase
       .from('bookings')
       .select('status')
-      .then(({ data }) => {
+      .then(({ data }: { data: any }) => {
         if (!data) return { data: {} };
         const statusCounts = data.reduce((acc: any, booking: any) => {
           acc[booking.status] = (acc[booking.status] || 0) + 1;
