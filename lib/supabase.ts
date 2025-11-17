@@ -3,11 +3,23 @@ import type { Database } from '../types/supabase'
 
 // Temporarily using untyped client to resolve type mismatches during modernization
 // Lazy initialization to avoid build-time evaluation
+let _supabaseInstance: ReturnType<typeof createBrowserClient> | null = null
+
 export const getSupabase = () => {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
-  return createBrowserClient(supabaseUrl, supabaseAnonKey)
+  if (!_supabaseInstance) {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+    _supabaseInstance = createBrowserClient(supabaseUrl, supabaseAnonKey)
+  }
+  return _supabaseInstance
 }
+
+// Backward compatibility - lazy proxy
+export const supabase = new Proxy({} as ReturnType<typeof createBrowserClient>, {
+  get(_target, prop) {
+    return getSupabase()[prop as keyof ReturnType<typeof createBrowserClient>]
+  }
+})
 
 // Server-side client for API routes (if needed)
 export const createServiceSupabase = () => {
