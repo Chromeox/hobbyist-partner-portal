@@ -16,6 +16,7 @@ import {
   Target,
   Zap
 } from 'lucide-react';
+import PrivacyPolicyBanner from '@/components/common/PrivacyPolicyBanner';
 
 interface ReviewStepProps {
   onSubmit: () => void;
@@ -219,21 +220,19 @@ export default function ReviewStep({ onSubmit, onPrevious, data }: ReviewStepPro
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: (requiredItems.length + index) * 0.1 }}
-              className={`flex items-center gap-3 p-3 border rounded-lg ${
-                item.completed
+              className={`flex items-center gap-3 p-3 border rounded-lg ${item.completed
                   ? 'bg-blue-50 border-blue-200'
                   : item.skipped
-                  ? 'bg-gray-50 border-gray-200'
-                  : 'bg-orange-50 border-orange-200'
-              }`}
+                    ? 'bg-gray-50 border-gray-200'
+                    : 'bg-orange-50 border-orange-200'
+                }`}
             >
-              <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                item.completed
+              <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${item.completed
                   ? 'bg-blue-100 text-blue-600'
                   : item.skipped
-                  ? 'bg-gray-100 text-gray-500'
-                  : 'bg-orange-100 text-orange-600'
-              }`}>
+                    ? 'bg-gray-100 text-gray-500'
+                    : 'bg-orange-100 text-orange-600'
+                }`}>
                 {item.icon}
               </div>
               <div className="flex-1">
@@ -299,59 +298,70 @@ export default function ReviewStep({ onSubmit, onPrevious, data }: ReviewStepPro
         </div>
       </div>
 
-      {/* Navigation Buttons */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.8 }}
-        className="space-y-4"
-      >
-        <button
-          onClick={handleSubmit}
-          disabled={!isReadyToLaunch}
-          className={`w-full py-4 px-6 font-medium rounded-lg transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-3 ${
-            isReadyToLaunch
-              ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:from-green-700 hover:to-emerald-700'
-              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-          }`}
-        >
-          <Sparkles className="h-5 w-5" />
-          Launch My Studio on Hobbyist
-          <ArrowRight className="h-5 w-5" />
-        </button>
-
-        <button
-          type="button"
-          onClick={onPrevious}
-          className="w-full py-3 px-6 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-all"
-        >
-          Back to Edit
-        </button>
-
-        {!isReadyToLaunch && (
-          <p className="text-center text-sm text-red-600 mt-2">
-            Please complete all required setup steps before launching
-          </p>
-        )}
-      </motion.div>
-
-      {/* Success Message */}
-      {isReadyToLaunch && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1 }}
-          className="text-center"
-        >
-          <p className="text-sm text-gray-600">
-            🎉 Congratulations! Your studio is ready to start accepting bookings on Hobbyist.
-            <br />
-            <span className="text-green-600 font-medium">
-              Welcome to the future of studio management!
-            </span>
-          </p>
-        </motion.div>
-      )}
     </div>
+
+      {/* Privacy Policy Notice */ }
+  <div className="mt-8 pt-6 border-t border-gray-200">
+    <PrivacyPolicyBanner
+      variant="inline"
+      context="onboarding"
+    />
+  </div>
+
+  {/* Navigation Buttons */ }
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay: 0.8 }}
+    className="space-y-4"
+  >
+    <button
+      onClick={handleSubmit}
+      disabled={!isReadyToLaunch}
+      className={`w-full py-4 px-6 font-medium rounded-lg transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-3 ${isReadyToLaunch
+          ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:from-green-700 hover:to-emerald-700'
+          : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+        }`}
+    >
+      <Sparkles className="h-5 w-5" />
+      Launch My Studio on Hobbyist
+      <ArrowRight className="h-5 w-5" />
+    </button>
+
+    <button
+      type="button"
+      onClick={onPrevious}
+      className="w-full py-3 px-6 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-all"
+    >
+      Back to Edit
+    </button>
+
+    {!isReadyToLaunch && (
+      <p className="text-center text-sm text-red-600 mt-2">
+        Please complete all required setup steps before launching
+      </p>
+    )}
+  </motion.div>
+
+  {/* Success Message */ }
+  {
+    isReadyToLaunch && (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1 }}
+        className="text-center"
+      >
+        <p className="text-sm text-gray-600">
+          🎉 Congratulations! Your studio is ready to start accepting bookings on Hobbyist.
+          <br />
+          <span className="text-green-600 font-medium">
+            Welcome to the future of studio management!
+          </span>
+        </p>
+      </motion.div>
+    )
+  }
+    </div >
   );
 }

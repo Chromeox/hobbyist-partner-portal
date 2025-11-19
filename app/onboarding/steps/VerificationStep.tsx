@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { Upload, FileText, CheckCircle, AlertCircle } from 'lucide-react';
+import PrivacyPolicyBanner from '@/components/common/PrivacyPolicyBanner';
 
 interface VerificationStepProps {
   onNext: (data: any) => void;
@@ -18,11 +19,11 @@ export default function VerificationStep({ onNext, onPrevious, data }: Verificat
     certifications: data.verification?.certifications || [],
   });
 
-  const [uploadStatus, setUploadStatus] = useState<{[key: string]: 'pending' | 'uploading' | 'success' | 'error'}>({});
+  const [uploadStatus, setUploadStatus] = useState<{ [key: string]: 'pending' | 'uploading' | 'success' | 'error' }>({});
 
   const handleFileUpload = (field: string, file: File) => {
     setUploadStatus(prev => ({ ...prev, [field]: 'uploading' }));
-    
+
     // Simulate file upload
     setTimeout(() => {
       setFormData(prev => ({ ...prev, [field]: file.name }));
@@ -78,14 +79,14 @@ export default function VerificationStep({ onNext, onPrevious, data }: Verificat
               <Upload className="h-12 w-12 text-gray-400" />
             )}
           </div>
-          
+
           <h3 className="text-lg font-semibold text-gray-900 mb-2">
             {requirement.label}
             {requirement.required && <span className="text-red-500 ml-1">*</span>}
           </h3>
-          
+
           <p className="text-gray-600 mb-4">{requirement.description}</p>
-          
+
           {hasFile ? (
             <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
               <div className="flex items-center justify-center">
@@ -94,7 +95,7 @@ export default function VerificationStep({ onNext, onPrevious, data }: Verificat
               </div>
             </div>
           ) : null}
-          
+
           <input
             type="file"
             id={`upload-${requirement.id}`}
@@ -106,26 +107,25 @@ export default function VerificationStep({ onNext, onPrevious, data }: Verificat
             className="hidden"
             disabled={status === 'uploading'}
           />
-          
+
           <label
             htmlFor={`upload-${requirement.id}`}
-            className={`inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md transition-colors cursor-pointer ${
-              status === 'uploading'
-                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                : hasFile
+            className={`inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md transition-colors cursor-pointer ${status === 'uploading'
+              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+              : hasFile
                 ? 'bg-blue-100 text-blue-700 hover:bg-blue-200'
                 : 'bg-blue-600 text-white hover:bg-blue-700'
-            }`}
+              }`}
           >
             <Upload className="h-4 w-4 mr-2" />
-            {status === 'uploading' 
-              ? 'Uploading...' 
-              : hasFile 
-              ? 'Replace File' 
-              : 'Choose File'
+            {status === 'uploading'
+              ? 'Uploading...'
+              : hasFile
+                ? 'Replace File'
+                : 'Choose File'
             }
           </label>
-          
+
           <p className="text-sm text-gray-500 mt-2">
             Supported formats: PDF, JPG, PNG, DOC, DOCX (Max 10MB)
           </p>
@@ -162,7 +162,7 @@ export default function VerificationStep({ onNext, onPrevious, data }: Verificat
           <p className="text-gray-600 mb-4">
             Upload any professional certifications for your instructors to showcase expertise.
           </p>
-          
+
           <div className="border-2 border-dashed border-blue-300 rounded-lg p-4 text-center">
             <input
               type="file"
@@ -178,7 +178,7 @@ export default function VerificationStep({ onNext, onPrevious, data }: Verificat
               }}
               className="hidden"
             />
-            
+
             <label
               htmlFor="certifications-upload"
               className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors cursor-pointer"
@@ -186,7 +186,7 @@ export default function VerificationStep({ onNext, onPrevious, data }: Verificat
               <Upload className="h-4 w-4 mr-2" />
               Upload Certifications
             </label>
-            
+
             {formData.certifications.length > 0 && (
               <div className="mt-4">
                 <p className="text-sm font-medium text-blue-900 mb-2">
@@ -222,6 +222,14 @@ export default function VerificationStep({ onNext, onPrevious, data }: Verificat
           </div>
         </div>
 
+        {/* Privacy Policy Notice */}
+        <div className="mt-8 pt-6 border-t border-gray-200">
+          <PrivacyPolicyBanner
+            variant="inline"
+            context="onboarding"
+          />
+        </div>
+
         {/* Navigation Buttons */}
         <div className="mt-8 flex justify-between">
           <button
@@ -234,11 +242,10 @@ export default function VerificationStep({ onNext, onPrevious, data }: Verificat
           <button
             type="submit"
             disabled={!canProceed}
-            className={`px-8 py-3 rounded-lg font-medium transition-all shadow-md hover:shadow-lg ${
-              canProceed
-                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700'
-                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-            }`}
+            className={`px-8 py-3 rounded-lg font-medium transition-all shadow-md hover:shadow-lg ${canProceed
+              ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700'
+              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              }`}
           >
             Continue
           </button>

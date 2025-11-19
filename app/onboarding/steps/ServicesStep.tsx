@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import PrivacyPolicyBanner from '@/components/common/PrivacyPolicyBanner';
 
 interface ServicesStepProps {
   onNext: (data: any) => void;
@@ -26,6 +27,14 @@ export default function ServicesStep({ onNext, onPrevious, data }: ServicesStepP
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="bg-blue-50 p-6 rounded-lg">
           <p className="text-blue-800">You can configure your classes and services after completing onboarding.</p>
+        </div>
+
+        {/* Privacy Policy Notice */}
+        <div className="mt-8 pt-6 border-t border-gray-200">
+          <PrivacyPolicyBanner
+            variant="inline"
+            context="onboarding"
+          />
         </div>
 
         {/* Navigation Buttons */}

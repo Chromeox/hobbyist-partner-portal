@@ -85,11 +85,11 @@ interface DashboardOverviewProps {
 }
 
 const SkeletonCard = () => (
-    <div className="relative overflow-hidden bg-gray-100 border rounded-xl p-4 animate-pulse">
-        <div className="h-6 bg-gray-200 rounded w-1/4 mb-2"></div>
-        <div className="h-8 bg-gray-200 rounded w-1/2 mb-4"></div>
-        <div className="h-4 bg-gray-200 rounded w-full"></div>
-    </div>
+  <div className="relative overflow-hidden bg-gray-100 border rounded-xl p-4 animate-pulse">
+    <div className="h-6 bg-gray-200 rounded w-1/4 mb-2"></div>
+    <div className="h-8 bg-gray-200 rounded w-1/2 mb-4"></div>
+    <div className="h-4 bg-gray-200 rounded w-full"></div>
+  </div>
 );
 
 interface EmptyStateProps {
@@ -259,7 +259,7 @@ export default function DashboardOverview({ studioId }: DashboardOverviewProps) 
   useEffect(() => {
     fetchDashboardData();
   }, [selectedPeriod, effectiveStudioId]);
-  
+
   const revenueChartData = useMemo(() => {
     if (!revenueSeries.labels.length || !revenueSeries.values.length) {
       return null;
@@ -366,14 +366,14 @@ export default function DashboardOverview({ studioId }: DashboardOverviewProps) 
     }
 
     if (chartRef.current) {
-        const chart = chartRef.current;
-        const elements = chart.getElementsAtEventForMode(event.nativeEvent, 'nearest', { intersect: true }, true);
-        if (elements.length > 0) {
-            const element = elements[0];
-            const value = Number(revenueChartData.datasets[element.datasetIndex].data[element.index]) || 0;
-            const label = revenueChartData.labels[element.index];
-            alert(`Revenue for ${label}: ${formatCurrency(value)}`);
-        }
+      const chart = chartRef.current;
+      const elements = chart.getElementsAtEventForMode(event.nativeEvent, 'nearest', { intersect: true }, true);
+      if (elements.length > 0) {
+        const element = elements[0];
+        const value = Number(revenueChartData.datasets[element.datasetIndex].data[element.index]) || 0;
+        const label = revenueChartData.labels[element.index];
+        alert(`Revenue for ${label}: ${formatCurrency(value)}`);
+      }
     }
   };
 
@@ -385,7 +385,7 @@ export default function DashboardOverview({ studioId }: DashboardOverviewProps) 
           <h1 className="text-3xl font-bold text-gray-900">Dashboard Overview</h1>
           <p className="text-gray-600 mt-1">Welcome back! Here's what's happening with your studio.</p>
         </div>
-        
+
         <div className="flex items-center gap-3">
           <select
             value={selectedPeriod}
@@ -403,15 +403,43 @@ export default function DashboardOverview({ studioId }: DashboardOverviewProps) 
             <option value="month">This Month</option>
             <option value="year">This Year</option>
           </select>
-          
+
           <button
             onClick={handleRefresh}
             className={`p-2 border border-gray-300 rounded-lg hover:bg-gray-50 ${isLoading ? 'animate-spin' : ''}`}
           >
             <RefreshCw className="h-5 w-5 text-gray-600" />
           </button>
-          
-          <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center">
+
+          <button
+            onClick={() => {
+              const headers = ['Metric', 'Value', 'Change', 'Period'];
+              const rows = kpiData.map(kpi => [
+                kpi.title,
+                kpi.value,
+                `${kpi.changeType === 'increase' ? '+' : '-'}${kpi.change}%`,
+                selectedPeriod
+              ]);
+
+              const csvContent = [
+                headers.join(','),
+                ...rows.map(row => row.join(','))
+              ].join('\n');
+
+              const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+              const link = document.createElement('a');
+              if (link.download !== undefined) {
+                const url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                link.setAttribute('download', `dashboard_report_${selectedPeriod}_${new Date().toISOString().split('T')[0]}.csv`);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+              }
+            }}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center"
+          >
             <Download className="h-4 w-4 mr-2" />
             Export Report
           </button>
@@ -683,7 +711,7 @@ export default function DashboardOverview({ studioId }: DashboardOverviewProps) 
                 maintainAspectRatio: false,
                 cutout: '70%',
                 plugins: {
-                  legend: { 
+                  legend: {
                     position: 'bottom',
                     labels: {
                       padding: 15,
@@ -740,7 +768,7 @@ export default function DashboardOverview({ studioId }: DashboardOverviewProps) 
                     }
                   },
                   scales: {
-                    y: { 
+                    y: {
                       beginAtZero: true,
                       title: {
                         display: true,
@@ -751,12 +779,12 @@ export default function DashboardOverview({ studioId }: DashboardOverviewProps) 
                 }}
               />
             ) : (
-                <EmptyState 
-                    title="No class data available" 
-                    message="Once you have bookings, you will see your most popular classes here."
-                    actionText="Create a Class"
-                    onAction={() => { /* Navigate to create class page */ }}
-                />
+              <EmptyState
+                title="No class data available"
+                message="Once you have bookings, you will see your most popular classes here."
+                actionText="Create a Class"
+                onAction={() => { /* Navigate to create class page */ }}
+              />
             )}
           </div>
         </div>
@@ -769,28 +797,27 @@ export default function DashboardOverview({ studioId }: DashboardOverviewProps) 
           </div>
           <div className="space-y-4">
             {upcomingClasses.length > 0 ? (
-                upcomingClasses.map(cls => (
-                  <div key={cls.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-gray-500" />
-                        <span className="text-sm text-gray-600">{cls.time}</span>
-                      </div>
-                      <h3 className="font-medium text-gray-900 mt-1">{cls.name}</h3>
-                      <p className="text-sm text-gray-600">{cls.instructor}</p>
+              upcomingClasses.map(cls => (
+                <div key={cls.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-4 w-4 text-gray-500" />
+                      <span className="text-sm text-gray-600">{cls.time}</span>
                     </div>
-                    <div className="text-right">
-                      <div className={`text-sm font-medium ${
-                        cls.enrolled === cls.capacity ? 'text-red-600' : 'text-green-600'
+                    <h3 className="font-medium text-gray-900 mt-1">{cls.name}</h3>
+                    <p className="text-sm text-gray-600">{cls.instructor}</p>
+                  </div>
+                  <div className="text-right">
+                    <div className={`text-sm font-medium ${cls.enrolled === cls.capacity ? 'text-red-600' : 'text-green-600'
                       }`}>
-                        {cls.enrolled}/{cls.capacity}
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        {cls.enrolled === cls.capacity ? 'Full' : `${cls.capacity - cls.enrolled} spots`}
-                      </div>
+                      {cls.enrolled}/{cls.capacity}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      {cls.enrolled === cls.capacity ? 'Full' : `${cls.capacity - cls.enrolled} spots`}
                     </div>
                   </div>
-                ))
+                </div>
+              ))
             ) : (
               <div className="rounded-xl border-2 border-dashed border-gray-200 bg-gray-50">
                 <EmptyState
@@ -818,29 +845,28 @@ export default function DashboardOverview({ studioId }: DashboardOverviewProps) 
           </button>
         </div>
         <div className="space-y-3">
-            {recentActivities.length > 0 ? (
-                recentActivities.map(activity => (
-                  <div key={activity.id} className="flex items-start gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors">
-                    <div className={`p-2 rounded-lg ${
-                      activity.type === 'booking' ? 'bg-blue-100 text-blue-600' :
-                      activity.type === 'review' ? 'bg-yellow-100 text-yellow-600' :
+          {recentActivities.length > 0 ? (
+            recentActivities.map(activity => (
+              <div key={activity.id} className="flex items-start gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors">
+                <div className={`p-2 rounded-lg ${activity.type === 'booking' ? 'bg-blue-100 text-blue-600' :
+                    activity.type === 'review' ? 'bg-yellow-100 text-yellow-600' :
                       activity.type === 'payment' ? 'bg-green-100 text-green-600' :
-                      'bg-red-100 text-red-600'
-                    }`}>
-                      <Activity className="h-4 w-4" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-gray-900">{activity.message}</p>
-                      <p className="text-sm text-gray-500 mt-1">{activity.time}</p>
-                    </div>
-                  </div>
-                ))
-            ) : (
-                <EmptyState 
-                    title="No recent activity" 
-                    message="Recent bookings, reviews, and payments will appear here."
-                />
-            )}
+                        'bg-red-100 text-red-600'
+                  }`}>
+                  <Activity className="h-4 w-4" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-gray-900">{activity.message}</p>
+                  <p className="text-sm text-gray-500 mt-1">{activity.time}</p>
+                </div>
+              </div>
+            ))
+          ) : (
+            <EmptyState
+              title="No recent activity"
+              message="Recent bookings, reviews, and payments will appear here."
+            />
+          )}
         </div>
       </div>
     </div>

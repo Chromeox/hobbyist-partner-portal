@@ -48,6 +48,16 @@ const FALLBACK_CATEGORIES = [
   'Sculpture',
   'Mixed Media',
   'Digital Arts',
+  'Sports & Fitness',
+  'Music & Instruments',
+  'Culinary & Cooking',
+  'Photography',
+  'Writing & Literature',
+  'Performing Arts',
+  'Technology & Coding',
+  'Gardening & Horticulture',
+  'Language Learning',
+  'Wellness & Meditation',
 ];
 
 const FALLBACK_LOCATIONS = [
@@ -87,6 +97,7 @@ export default function ClassEditor({ onClose, class: classData, onSave, studioI
     materials: [],
     prerequisites: [],
     cancellationPolicy: '24 hours before class starts',
+    wheelchairAccessible: false,
   });
 
   const [newTag, setNewTag] = useState('');
@@ -115,6 +126,7 @@ export default function ClassEditor({ onClose, class: classData, onSave, studioI
         materials: classData.materials || [],
         prerequisites: classData.prerequisites || [],
         cancellationPolicy: classData.cancellationPolicy || '24 hours before class starts',
+        wheelchairAccessible: classData.wheelchairAccessible || false,
       });
       setIsAddingCategory(false);
       setNewCategoryName('');
@@ -151,34 +163,46 @@ export default function ClassEditor({ onClose, class: classData, onSave, studioI
         const instructorPayload = await instructorResp.json();
         const instructorItems: InstructorOption[] = Array.isArray(instructorPayload?.instructors)
           ? instructorPayload.instructors
-              .map((item: any) => ({
-                id: item.id ?? item.user_id ?? '',
-                name:
-                  item.name ||
-                  `${item.first_name ?? ''} ${item.last_name ?? ''}`.trim() ||
-                  item.email ||
-                  'Instructor',
-              }))
-              .filter((item: InstructorOption) => item.id)
+            .map((item: any) => ({
+              id: item.id ?? item.user_id ?? '',
+              name:
+                item.name ||
+                `${item.first_name ?? ''} ${item.last_name ?? ''}`.trim() ||
+                item.email ||
+                'Instructor',
+            }))
+            .filter((item: InstructorOption) => item.id)
           : [];
+
+        // Merge with mock staff if API returns empty or for dev purposes
+        // This ensures the 4 staff members from Staff Management are visible
+        if (instructorItems.length === 0) {
+          const mockStaff = [
+            { id: '1', name: 'Sarah Johnson' },
+            { id: '2', name: 'Mike Chen' },
+            { id: '3', name: 'Emily Davis' },
+            { id: '4', name: 'Alex Rivera' }
+          ];
+          instructorItems.push(...mockStaff);
+        }
 
         const categoryPayload = await categoryResp.json();
         const categoryItemsRaw: CategoryOption[] = Array.isArray(categoryPayload?.categories)
           ? categoryPayload.categories
-              .map((item: any) => ({
-                id: item.id ?? '',
-                name: item.name ?? item.slug ?? 'Category',
-              }))
-              .filter((item: CategoryOption) => item.id)
+            .map((item: any) => ({
+              id: item.id ?? '',
+              name: item.name ?? item.slug ?? 'Category',
+            }))
+            .filter((item: CategoryOption) => item.id)
           : [];
 
         const normalizedCategories =
           categoryItemsRaw.length > 0
             ? categoryItemsRaw
             : FALLBACK_CATEGORIES.map((name, index) => ({
-                id: `fallback-${index}`,
-                name,
-              }));
+              id: `fallback-${index}`,
+              name,
+            }));
 
         setInstructors(instructorItems);
         setCategories(normalizedCategories);
@@ -489,9 +513,8 @@ export default function ClassEditor({ onClose, class: classData, onSave, studioI
                     onChange={(e) =>
                       setFormData((prev) => ({ ...prev, name: e.target.value }))
                     }
-                    className={`w-full rounded-lg border px-3 py-2 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      errors.name ? 'border-red-300' : 'border-gray-300'
-                    }`}
+                    className={`w-full rounded-lg border px-3 py-2 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.name ? 'border-red-300' : 'border-gray-300'
+                      }`}
                     placeholder="e.g., Beginner Pottery Wheel"
                   />
                   {errors.name && (
@@ -511,9 +534,8 @@ export default function ClassEditor({ onClose, class: classData, onSave, studioI
                       value={formData.categoryId ?? formData.category ?? ''}
                       onChange={(e) => handleCategorySelect(e.target.value)}
                       disabled={loadingCatalogs}
-                      className={`w-full rounded-lg border px-3 py-2 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                        errors.category ? 'border-red-300' : 'border-gray-300'
-                      }`}
+                      className={`w-full rounded-lg border px-3 py-2 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.category ? 'border-red-300' : 'border-gray-300'
+                        }`}
                     >
                       <option value="">Select a category</option>
                       {categories.map((categoryOption) => (
@@ -536,9 +558,8 @@ export default function ClassEditor({ onClose, class: classData, onSave, studioI
                         value={newCategoryName}
                         onChange={(e) => handleNewCategoryChange(e.target.value)}
                         placeholder="Enter a category name"
-                        className={`w-full rounded-lg border px-3 py-2 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                          errors.category ? 'border-red-300' : 'border-gray-300'
-                        }`}
+                        className={`w-full rounded-lg border px-3 py-2 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.category ? 'border-red-300' : 'border-gray-300'
+                          }`}
                       />
                       <div className="flex flex-wrap gap-2 text-xs text-gray-500">
                         <span>Examples:</span>
@@ -587,7 +608,36 @@ export default function ClassEditor({ onClose, class: classData, onSave, studioI
                     <option value="beginner">Beginner</option>
                     <option value="intermediate">Intermediate</option>
                     <option value="advanced">Advanced</option>
+                    <option value="all_levels">All Levels</option>
                   </select>
+                </div>
+
+                <div>
+                  <label className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-700">
+                    <MapPin className="h-4 w-4 text-gray-500" />
+                    Location *
+                  </label>
+                  <input
+                    list="class-location-options"
+                    value={formData.location}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, location: e.target.value }))
+                    }
+                    className={`w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.location ? 'border-red-300' : 'border-gray-300'
+                      }`}
+                    placeholder="e.g., Main Studio"
+                  />
+                  <datalist id="class-location-options">
+                    {locationOptions.map((option) => (
+                      <option key={option} value={option} />
+                    ))}
+                  </datalist>
+                  {errors.location && (
+                    <p className="mt-1 flex items-center gap-1 text-sm text-red-600">
+                      <AlertCircle className="h-4 w-4" />
+                      {errors.location}
+                    </p>
+                  )}
                 </div>
 
                 <div>
@@ -623,9 +673,8 @@ export default function ClassEditor({ onClose, class: classData, onSave, studioI
                     setFormData((prev) => ({ ...prev, description: e.target.value }))
                   }
                   rows={4}
-                  className={`w-full rounded-lg border px-3 py-2 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    errors.description ? 'border-red-300' : 'border-gray-300'
-                  }`}
+                  className={`w-full rounded-lg border px-3 py-2 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.description ? 'border-red-300' : 'border-gray-300'
+                    }`}
                   placeholder="Describe what students will learn and create in this class..."
                 />
                 {errors.description && (
@@ -642,7 +691,7 @@ export default function ClassEditor({ onClose, class: classData, onSave, studioI
               <div className="flex items-center gap-2">
                 <User className="h-5 w-5 text-green-600" />
                 <h3 className="text-lg font-semibold text-gray-900">
-                  Instructor & Location
+                  Staff/Instructor
                 </h3>
               </div>
 
@@ -655,9 +704,8 @@ export default function ClassEditor({ onClose, class: classData, onSave, studioI
                     value={formData.instructorId}
                     onChange={(e) => handleInstructorChange(e.target.value)}
                     disabled={!hasInstructors}
-                    className={`w-full rounded-lg border px-3 py-2 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      errors.instructor ? 'border-red-300' : 'border-gray-300'
-                    }`}
+                    className={`w-full rounded-lg border px-3 py-2 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.instructor ? 'border-red-300' : 'border-gray-300'
+                      }`}
                   >
                     <option value="">
                       {loadingCatalogs ? 'Loading instructors…' : 'Select an instructor'}
@@ -682,34 +730,6 @@ export default function ClassEditor({ onClose, class: classData, onSave, studioI
                   )}
                 </div>
 
-                <div>
-                  <label className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-700">
-                    <MapPin className="h-4 w-4 text-gray-500" />
-                    Location *
-                  </label>
-                  <input
-                    list="class-location-options"
-                    value={formData.location}
-                    onChange={(e) =>
-                      setFormData((prev) => ({ ...prev, location: e.target.value }))
-                    }
-                    className={`w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      errors.location ? 'border-red-300' : 'border-gray-300'
-                    }`}
-                    placeholder="e.g., Main Studio"
-                  />
-                  <datalist id="class-location-options">
-                    {locationOptions.map((option) => (
-                      <option key={option} value={option} />
-                    ))}
-                  </datalist>
-                  {errors.location && (
-                    <p className="mt-1 flex items-center gap-1 text-sm text-red-600">
-                      <AlertCircle className="h-4 w-4" />
-                      {errors.location}
-                    </p>
-                  )}
-                </div>
               </div>
             </div>
 
@@ -720,6 +740,19 @@ export default function ClassEditor({ onClose, class: classData, onSave, studioI
                 <h3 className="text-lg font-semibold text-gray-900">
                   Class Details
                 </h3>
+              </div>
+
+              <div className="flex items-center gap-3 mb-4">
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={formData.wheelchairAccessible}
+                    onChange={(e) => setFormData(prev => ({ ...prev, wheelchairAccessible: e.target.checked }))}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                  <span className="ml-3 text-sm font-medium text-gray-900">Wheelchair Accessible</span>
+                </label>
               </div>
 
               <div className="grid grid-cols-1 gap-6 md:grid-cols-4">
@@ -738,9 +771,8 @@ export default function ClassEditor({ onClose, class: classData, onSave, studioI
                         duration: Number.parseInt(e.target.value, 10) || 0,
                       }))
                     }
-                    className={`w-full rounded-lg border px-3 py-2 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      errors.duration ? 'border-red-300' : 'border-gray-300'
-                    }`}
+                    className={`w-full rounded-lg border px-3 py-2 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.duration ? 'border-red-300' : 'border-gray-300'
+                      }`}
                   />
                   {errors.duration && (
                     <p className="mt-1 flex items-center gap-1 text-sm text-red-600">
@@ -764,9 +796,8 @@ export default function ClassEditor({ onClose, class: classData, onSave, studioI
                         capacity: Number.parseInt(e.target.value, 10) || 0,
                       }))
                     }
-                    className={`w-full rounded-lg border px-3 py-2 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      errors.capacity ? 'border-red-300' : 'border-gray-300'
-                    }`}
+                    className={`w-full rounded-lg border px-3 py-2 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.capacity ? 'border-red-300' : 'border-gray-300'
+                      }`}
                   />
                   {errors.capacity && (
                     <p className="mt-1 flex items-center gap-1 text-sm text-red-600">
@@ -791,9 +822,8 @@ export default function ClassEditor({ onClose, class: classData, onSave, studioI
                         price: Number.parseFloat(e.target.value) || 0,
                       }))
                     }
-                    className={`w-full rounded-lg border px-3 py-2 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      errors.price ? 'border-red-300' : 'border-gray-300'
-                    }`}
+                    className={`w-full rounded-lg border px-3 py-2 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.price ? 'border-red-300' : 'border-gray-300'
+                      }`}
                   />
                   {errors.price && (
                     <p className="mt-1 flex items-center gap-1 text-sm text-red-600">
@@ -818,9 +848,8 @@ export default function ClassEditor({ onClose, class: classData, onSave, studioI
                         creditCost: Number.parseInt(e.target.value, 10) || 1,
                       }))
                     }
-                    className={`w-full rounded-lg border px-3 py-2 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      errors.creditCost ? 'border-red-300' : 'border-gray-300'
-                    }`}
+                    className={`w-full rounded-lg border px-3 py-2 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.creditCost ? 'border-red-300' : 'border-gray-300'
+                      }`}
                   />
                   {errors.creditCost && (
                     <p className="mt-1 flex items-center gap-1 text-sm text-red-600">
@@ -992,11 +1021,10 @@ export default function ClassEditor({ onClose, class: classData, onSave, studioI
                                 },
                               }))
                             }
-                            className={`rounded-lg border px-2 py-2 text-xs font-medium transition-colors ${
-                              isSelected
-                                ? 'border-indigo-600 bg-indigo-600 text-white'
-                                : 'border-gray-300 bg-white text-gray-600 hover:bg-gray-100'
-                            }`}
+                            className={`rounded-lg border px-2 py-2 text-xs font-medium transition-colors ${isSelected
+                              ? 'border-indigo-600 bg-indigo-600 text-white'
+                              : 'border-gray-300 bg-white text-gray-600 hover:bg-gray-100'
+                              }`}
                           >
                             {day.slice(0, 3)}
                           </button>
@@ -1171,5 +1199,6 @@ export default function ClassEditor({ onClose, class: classData, onSave, studioI
         </div>
       </motion.div>
     </motion.div>
+
   );
 }

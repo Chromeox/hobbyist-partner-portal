@@ -66,6 +66,7 @@ export interface ClassFormData {
   materials?: string[];
   prerequisites?: string[];
   cancellationPolicy: string;
+  wheelchairAccessible: boolean;
 }
 
 export interface Student {

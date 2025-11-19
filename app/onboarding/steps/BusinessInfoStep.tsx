@@ -30,9 +30,49 @@ export default function BusinessInfoStep({ onNext, onPrevious, data }: BusinessI
   const [errors, setErrors] = useState<any>({});
 
   const validateForm = () => {
-    // Remove all required field validations for demo purposes
-    setErrors({});
-    return true;
+    const newErrors: any = {};
+    let isValid = true;
+
+    if (!formData.legalBusinessName.trim()) {
+      newErrors.legalBusinessName = 'Legal Business Name is required';
+      isValid = false;
+    }
+
+    if (!formData.taxId.trim()) {
+      newErrors.taxId = 'Tax ID is required';
+      isValid = false;
+    }
+
+    if (!formData.contactEmail.trim()) {
+      newErrors.contactEmail = 'Contact Email is required';
+      isValid = false;
+    } else if (!/\S+@\S+\.\S+/.test(formData.contactEmail)) {
+      newErrors.contactEmail = 'Invalid email format';
+      isValid = false;
+    }
+
+    if (!formData.address.street.trim()) {
+      newErrors.addressStreet = 'Street address is required';
+      isValid = false;
+    }
+
+    if (!formData.address.city.trim()) {
+      newErrors.addressCity = 'City is required';
+      isValid = false;
+    }
+
+    if (!formData.address.state.trim()) {
+      newErrors.addressState = 'State is required';
+      isValid = false;
+    }
+
+    if (!formData.address.zipCode.trim()) {
+      newErrors.addressZipCode = 'ZIP Code is required';
+      isValid = false;
+    }
+
+    setErrors(newErrors);
+    return isValid;
   };
 
   const handleSubmit = (e: React.FormEvent) => {

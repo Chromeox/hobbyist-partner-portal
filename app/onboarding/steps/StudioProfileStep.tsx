@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { Camera, MapPin, Clock, Star, Plus, X } from 'lucide-react';
+import PrivacyPolicyBanner from '@/components/common/PrivacyPolicyBanner';
 
 interface StudioProfileStepProps {
   onNext: (data: any) => void;
@@ -26,6 +27,25 @@ export default function StudioProfileStep({ onNext, onPrevious, data }: StudioPr
 
   const [newSpecialty, setNewSpecialty] = useState('');
   const [newAmenity, setNewAmenity] = useState('');
+  const [errors, setErrors] = useState<any>({});
+
+  const validateForm = () => {
+    const newErrors: any = {};
+    let isValid = true;
+
+    if (!formData.tagline.trim()) {
+      newErrors.tagline = 'Tagline is required';
+      isValid = false;
+    }
+
+    if (!formData.description.trim()) {
+      newErrors.description = 'Description is required';
+      isValid = false;
+    }
+
+    setErrors(newErrors);
+    return isValid;
+  };
 
   const commonSpecialties = [
     'Yoga', 'Pilates', 'Barre', 'HIIT', 'Strength Training', 'Cardio',
@@ -73,7 +93,9 @@ export default function StudioProfileStep({ onNext, onPrevious, data }: StudioPr
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onNext({ studioProfile: formData });
+    if (validateForm()) {
+      onNext({ studioProfile: formData });
+    }
   };
 
   return (
@@ -94,11 +116,15 @@ export default function StudioProfileStep({ onNext, onPrevious, data }: StudioPr
               type="text"
               value={formData.tagline}
               onChange={(e) => setFormData(prev => ({ ...prev, tagline: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.tagline ? 'border-red-500' : 'border-gray-300'
+                }`}
               placeholder="e.g., Your wellness journey starts here"
               maxLength={100}
             />
-            <p className="text-sm text-gray-500 mt-1">{formData.tagline.length}/100 characters</p>
+            <div className="flex justify-between mt-1">
+              <p className="text-sm text-gray-500">{formData.tagline.length}/100 characters</p>
+              {errors.tagline && <p className="text-sm text-red-500">{errors.tagline}</p>}
+            </div>
           </div>
 
           <div>
@@ -109,11 +135,15 @@ export default function StudioProfileStep({ onNext, onPrevious, data }: StudioPr
               rows={4}
               value={formData.description}
               onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.description ? 'border-red-500' : 'border-gray-300'
+                }`}
               placeholder="Tell students about your studio's mission, philosophy, and what makes you unique..."
               maxLength={500}
             />
-            <p className="text-sm text-gray-500 mt-1">{formData.description.length}/500 characters</p>
+            <div className="flex justify-between mt-1">
+              <p className="text-sm text-gray-500">{formData.description.length}/500 characters</p>
+              {errors.description && <p className="text-sm text-red-500">{errors.description}</p>}
+            </div>
           </div>
         </div>
 
@@ -122,7 +152,7 @@ export default function StudioProfileStep({ onNext, onPrevious, data }: StudioPr
           <label className="block text-sm font-medium text-gray-700 mb-3">
             Class Specialties
           </label>
-          
+
           {/* Selected Specialties */}
           <div className="flex flex-wrap gap-2 mb-3">
             {formData.specialties.map((specialty: string) => (
@@ -183,7 +213,7 @@ export default function StudioProfileStep({ onNext, onPrevious, data }: StudioPr
           <label className="block text-sm font-medium text-gray-700 mb-3">
             Amenities
           </label>
-          
+
           {/* Selected Amenities */}
           <div className="flex flex-wrap gap-2 mb-3">
             {formData.amenities.map((amenity: string) => (
@@ -321,6 +351,14 @@ export default function StudioProfileStep({ onNext, onPrevious, data }: StudioPr
               />
             </div>
           </div>
+        </div>
+
+        {/* Privacy Policy Notice */}
+        <div className="mt-8 pt-6 border-t border-gray-200">
+          <PrivacyPolicyBanner
+            variant="inline"
+            context="onboarding"
+          />
         </div>
 
         {/* Navigation Buttons */}
