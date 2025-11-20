@@ -2,6 +2,8 @@
 
 import React, { useState } from 'react';
 import { Camera, MapPin, Clock, Star, Plus, X } from 'lucide-react';
+import { useAuth } from '@/lib/hooks/useAuth';
+import { uploadFile, compressImage } from '@/lib/storage';
 import PrivacyPolicyBanner from '@/components/common/PrivacyPolicyBanner';
 
 interface StudioProfileStepProps {
@@ -11,6 +13,7 @@ interface StudioProfileStepProps {
 }
 
 export default function StudioProfileStep({ onNext, onPrevious, data }: StudioProfileStepProps) {
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
     tagline: data.studioProfile?.tagline || '',
     description: data.studioProfile?.description || '',
@@ -28,6 +31,52 @@ export default function StudioProfileStep({ onNext, onPrevious, data }: StudioPr
   const [newSpecialty, setNewSpecialty] = useState('');
   const [newAmenity, setNewAmenity] = useState('');
   const [errors, setErrors] = useState<any>({});
+  const [uploadingPhotos, setUploadingPhotos] = useState(false);
+
+  const handlePhotoUpload = async (files: FileList | null) => {
+    if (!files || files.length === 0 || !user) return;
+
+    setUploadingPhotos(true);
+
+    try {
+      const uploadPromises = Array.from(files).map(async (file) => {
+        // Compress image first
+        const compressed = await compressImage(file, 1920, 0.85);
+
+        // Upload to Supabase
+        const result = await uploadFile(compressed, user.id, {
+          bucket: 'studio-photos',
+          folder: 'profile',
+          maxSizeMB: 5,
+          allowedTypes: ['image/jpeg', 'image/png', 'image/jpg', 'image/webp']
+        });
+
+        if (result.error) {
+          console.error('Photo upload error:', result.error);
+          return null;
+        }
+
+        return result.url;
+      });
+
+      const uploadedUrls = (await Promise.all(uploadPromises)).filter(Boolean) as string[];
+      setFormData(prev => ({
+        ...prev,
+        photos: [...prev.photos, ...uploadedUrls]
+      }));
+    } catch (error) {
+      console.error('Photo upload exception:', error);
+    } finally {
+      setUploadingPhotos(false);
+    }
+  };
+
+  const handleRemovePhoto = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      photos: prev.photos.filter((_: any, i: number) => i !== index)
+    }));
+  };
 
   const validateForm = () => {
     const newErrors: any = {};
@@ -275,20 +324,70 @@ export default function StudioProfileStep({ onNext, onPrevious, data }: StudioPr
             Studio Photos
           </label>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[...Array(6)].map((_, index) => (
+            {/* Uploaded Photos */}
+            {formData.photos.map((photoUrl: string, index: number) => (
               <div
                 key={index}
-                className="aspect-square bg-gray-100 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300 hover:border-gray-400 transition-colors cursor-pointer"
+                className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden group"
               >
-                <div className="text-center">
-                  <Camera className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                  <p className="text-sm text-gray-500">Add Photo</p>
-                </div>
+                <img
+                  src={photoUrl}
+                  alt={`Studio photo ${index + 1}`}
+                  className="w-full h-full object-cover"
+                />
+                <button
+                  type="button"
+                  onClick={() => handleRemovePhoto(index)}
+                  className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+                {index === 0 && (
+                  <div className="absolute bottom-2 left-2 px-2 py-1 bg-blue-600 text-white text-xs rounded-full">
+                    Main Photo
+                  </div>
+                )}
               </div>
             ))}
+
+            {/* Upload Button */}
+            {formData.photos.length < 6 && (
+              <div className="aspect-square">
+                <input
+                  type="file"
+                  id="studio-photos-upload"
+                  accept="image/jpeg,image/png,image/jpg,image/webp"
+                  multiple
+                  onChange={(e) => handlePhotoUpload(e.target.files)}
+                  className="hidden"
+                  disabled={uploadingPhotos}
+                />
+                <label
+                  htmlFor="studio-photos-upload"
+                  className={`w-full h-full bg-gray-100 rounded-lg flex items-center justify-center border-2 border-dashed transition-colors ${uploadingPhotos
+                      ? 'border-blue-400 cursor-not-allowed'
+                      : 'border-gray-300 hover:border-gray-400 cursor-pointer'
+                    }`}
+                >
+                  <div className="text-center">
+                    {uploadingPhotos ? (
+                      <>
+                        <div className="h-8 w-8 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-2" />
+                        <p className="text-sm text-blue-600">Uploading...</p>
+                      </>
+                    ) : (
+                      <>
+                        <Camera className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                        <p className="text-sm text-gray-500">Add Photo</p>
+                      </>
+                    )}
+                  </div>
+                </label>
+              </div>
+            )}
           </div>
           <p className="text-sm text-gray-500 mt-2">
-            Upload high-quality photos of your studio, classes, and facilities. First photo will be your main image.
+            Upload high-quality photos of your studio, classes, and facilities. First photo will be your main image. ({formData.photos.length}/6 photos)
           </p>
         </div>
 

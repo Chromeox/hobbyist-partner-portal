@@ -2,6 +2,8 @@
 
 import React, { useState } from 'react';
 import { Upload, FileText, CheckCircle, AlertCircle } from 'lucide-react';
+import { useAuth } from '@/lib/hooks/useAuth';
+import { uploadFile } from '@/lib/storage';
 import PrivacyPolicyBanner from '@/components/common/PrivacyPolicyBanner';
 
 interface VerificationStepProps {
@@ -11,6 +13,7 @@ interface VerificationStepProps {
 }
 
 export default function VerificationStep({ onNext, onPrevious, data }: VerificationStepProps) {
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
     businessLicense: data.verification?.businessLicense || null,
     insuranceCert: data.verification?.insuranceCert || null,
@@ -20,15 +23,47 @@ export default function VerificationStep({ onNext, onPrevious, data }: Verificat
   });
 
   const [uploadStatus, setUploadStatus] = useState<{ [key: string]: 'pending' | 'uploading' | 'success' | 'error' }>({});
+  const [uploadErrors, setUploadErrors] = useState<{ [key: string]: string }>({});
 
-  const handleFileUpload = (field: string, file: File) => {
+  const handleFileUpload = async (field: string, file: File) => {
+    if (!user) {
+      setUploadErrors(prev => ({ ...prev, [field]: 'Please sign in to upload files' }));
+      setUploadStatus(prev => ({ ...prev, [field]: 'error' }));
+      return;
+    }
+
     setUploadStatus(prev => ({ ...prev, [field]: 'uploading' }));
+    setUploadErrors(prev => ({ ...prev, [field]: '' }));
 
-    // Simulate file upload
-    setTimeout(() => {
-      setFormData(prev => ({ ...prev, [field]: file.name }));
+    try {
+      const result = await uploadFile(file, user.id, {
+        bucket: 'verification-documents',
+        folder: 'onboarding',
+        maxSizeMB: 10,
+        allowedTypes: [
+          'application/pdf',
+          'image/jpeg',
+          'image/png',
+          'image/jpg'
+        ]
+      });
+
+      if (result.error) {
+        setUploadStatus(prev => ({ ...prev, [field]: 'error' }));
+        setUploadErrors(prev => ({ ...prev, [field]: result.error! }));
+        return;
+      }
+
+      // Store the URL
+      setFormData(prev => ({ ...prev, [field]: result.url }));
       setUploadStatus(prev => ({ ...prev, [field]: 'success' }));
-    }, 1500);
+    } catch (error) {
+      setUploadStatus(prev => ({ ...prev, [field]: 'error' }));
+      setUploadErrors(prev => ({
+        ...prev,
+        [field]: error instanceof Error ? error.message : 'Upload failed'
+      }));
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -169,12 +204,44 @@ export default function VerificationStep({ onNext, onPrevious, data }: Verificat
               id="certifications-upload"
               accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
               multiple
-              onChange={(e) => {
+              onChange={async (e) => {
                 const files = Array.from(e.target.files || []);
-                setFormData(prev => ({
-                  ...prev,
-                  certifications: [...prev.certifications, ...files.map(f => f.name)]
-                }));
+                if (files.length === 0 || !user) return;
+
+                setUploadStatus(prev => ({ ...prev, certifications: 'uploading' }));
+
+                try {
+                  const uploadPromises = files.map(async (file) => {
+                    const result = await uploadFile(file, user.id, {
+                      bucket: 'verification-documents',
+                      folder: 'certifications',
+                      maxSizeMB: 10,
+                      allowedTypes: [
+                        'application/pdf',
+                        'image/jpeg',
+                        'image/png',
+                        'image/jpg'
+                      ]
+                    });
+
+                    if (result.error) {
+                      console.error('Certification upload error:', result.error);
+                      return null;
+                    }
+
+                    return result.url;
+                  });
+
+                  const uploadedUrls = (await Promise.all(uploadPromises)).filter(Boolean) as string[];
+                  setFormData(prev => ({
+                    ...prev,
+                    certifications: [...prev.certifications, ...uploadedUrls]
+                  }));
+                  setUploadStatus(prev => ({ ...prev, certifications: 'success' }));
+                } catch (error) {
+                  console.error('Certifications upload exception:', error);
+                  setUploadStatus(prev => ({ ...prev, certifications: 'error' }));
+                }
               }}
               className="hidden"
             />
@@ -184,7 +251,7 @@ export default function VerificationStep({ onNext, onPrevious, data }: Verificat
               className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors cursor-pointer"
             >
               <Upload className="h-4 w-4 mr-2" />
-              Upload Certifications
+              {uploadStatus.certifications === 'uploading' ? 'Uploading...' : 'Upload Certifications'}
             </label>
 
             {formData.certifications.length > 0 && (
@@ -193,13 +260,13 @@ export default function VerificationStep({ onNext, onPrevious, data }: Verificat
                   {formData.certifications.length} certification(s) uploaded
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  {formData.certifications.map((cert: string, index: number) => (
+                  {formData.certifications.map((certUrl: string, index: number) => (
                     <span
                       key={index}
                       className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 text-sm rounded-full"
                     >
                       <FileText className="h-3 w-3 mr-1" />
-                      {cert}
+                      Cert {index + 1}
                     </span>
                   ))}
                 </div>
